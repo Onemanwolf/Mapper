@@ -14,7 +14,7 @@ public class Program
 
 
         builder.Services.AddAutoMapper(typeof(Program).Assembly);
-    // Add other services
+        // Add other services
 
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
         builder.Services.AddEndpointsApiExplorer();
@@ -40,7 +40,7 @@ public class Program
 
         app.MapGet("/weatherforecast", (HttpContext httpContext) =>
         {
-            var forecast =  Enumerable.Range(1, 5).Select(index =>
+            var forecast = Enumerable.Range(1, 5).Select(index =>
                 new WeatherForecast
                 {
                     Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
@@ -54,9 +54,11 @@ public class Program
         .WithOpenApi();
 
 
-        app.MapGet("/userdto", (HttpContext httpContext) => {
-            var service = new Service();
-            var dto = service.GetUser("John"); return dto.Result;})
+        app.MapGet("/userdto", (HttpContext httpContext) =>
+        {
+            var service = new UserService();
+            var dto = service.GetUser("John"); return dto.Result;
+        })
             .WithName("GetUserDTO")
             .WithOpenApi();
         app.Run();
