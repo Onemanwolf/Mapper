@@ -12,7 +12,7 @@ public class Program
         // Add services to the container.
         builder.Services.AddAuthorization();
 
-
+        // Add AutoMapper
         builder.Services.AddAutoMapper(typeof(Program).Assembly);
         // Add other services
 
@@ -33,28 +33,7 @@ public class Program
 
         app.UseAuthorization();
 
-        var summaries = new[]
-        {
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        };
-
-        app.MapGet("/weatherforecast", (HttpContext httpContext) =>
-        {
-            var forecast = Enumerable.Range(1, 5).Select(index =>
-                new WeatherForecast
-                {
-                    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-                    TemperatureC = Random.Shared.Next(-20, 55),
-                    Summary = summaries[Random.Shared.Next(summaries.Length)]
-                })
-                .ToArray();
-            return forecast;
-        })
-        .WithName("GetWeatherForecast")
-        .WithOpenApi();
-
-
-        app.MapGet("/userdto", (HttpContext httpContext) =>
+        app.MapGet("/user", (HttpContext httpContext) =>
         {
             var service = new UserService();
             var dto = service.GetUser("John"); return dto.Result;

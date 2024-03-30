@@ -32,3 +32,4 @@ C:\Users\timot\source\repos\Mapper\obj\Debug\net8.0\refint\Mapper.dll
 C:\Users\timot\source\repos\Mapper\obj\Debug\net8.0\Mapper.pdb
 C:\Users\timot\source\repos\Mapper\obj\Debug\net8.0\Mapper.genruntimeconfig.cache
 C:\Users\timot\source\repos\Mapper\obj\Debug\net8.0\ref\Mapper.dll
+c:\Users\timot\source\repos\Mapper\obj\Debug\net8.0\Mapper.sourcelink.json
