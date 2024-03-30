@@ -1,6 +1,6 @@
 @Mapper_HostAddress = http://localhost:5210
 
-GET {{Mapper_HostAddress}}/weatherforecast/
+GET {{Mapper_HostAddress}}/user/
 Accept: application/json
 
 ###
