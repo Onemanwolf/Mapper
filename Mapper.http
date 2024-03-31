@@ -2,5 +2,6 @@
 
 GET {{Mapper_HostAddress}}/user/
 Accept: application/json
-
+POST {{Mapper_HostAddress}}/user/
+Accept: application/json
 ###
