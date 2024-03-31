@@ -13,7 +13,7 @@ public class Program
 {
     public static MapperConfiguration _mapperConfiguration = new MapperConfiguration(cfg =>
                         {
-                            cfg.CreateMap<User, UserDTO>();;
+                            cfg.CreateMap<User, UserDTO>(); ;
                         });
 
     public async static Task Main(string[] args)
@@ -32,15 +32,15 @@ public class Program
         builder.Services.AddSwaggerGen();
         builder.Services.AddSingleton<IMapper>(sp =>
                     {
-                         _mapperConfiguration = new MapperConfiguration(cfg =>
-                        {
-                            cfg.CreateMap<User, UserDTO>();
-                        });
+                        _mapperConfiguration = new MapperConfiguration(cfg =>
+                       {
+                           cfg.CreateMap<User, UserDTO>();
+                       });
 
                         return _mapperConfiguration.CreateMapper();
                     });
         builder.Services.AddSingleton<ICosmosRepository, CosmosRepository>();
-        var configuration = builder.Configuration.AddJsonFile("appsettings.Development.json").AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING") ).Build();
+        var configuration = builder.Configuration.AddJsonFile("appsettings.Development.json").AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING")).Build();
         builder.Services.AddSingleton<IConfiguration>(configuration);
         var app = builder.Build();
 
@@ -58,7 +58,7 @@ public class Program
         app.MapGet("/user", (HttpContext httpContext) =>
         {
             var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());
-            var dto = service.GetUser("John");
+            var dto = service.GetUserById("John");
             return dto.Result;
         })
             .WithName("GetUserDTO")
@@ -69,7 +69,8 @@ public class Program
         {
             var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());
             var dto = service.CreateUser(user.Name, user.Email);
-            return HttpStatusCode.Created;}).WithName("CreateUserDTO").WithOpenApi();
+            return HttpStatusCode.Created;
+        }).WithName("CreateUserDTO").WithOpenApi();
         app.MapPut("/user", (HttpContext httpContext, [FromBody] UserUpdateRequest user) =>
         {
             var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());

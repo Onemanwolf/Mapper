@@ -4,6 +4,7 @@ using AutoMapper;
 using Mapper.Models;
 using Mapper.Models.DTOs;
 using Mapper.Repository;
+using Microsoft.Identity.Client;
 
 namespace Mapper.Services
 {
@@ -21,24 +22,19 @@ namespace Mapper.Services
 
             _mapper = mapper;
 
-        //     new MapperConfiguration(cfg =>
-        //    {
-        //        cfg.CreateMap<User, UserDTO>();
-        //    }).CreateMapper();
+            //     new MapperConfiguration(cfg =>
+            //    {
+            //        cfg.CreateMap<User, UserDTO>();
+            //    }).CreateMapper();
         }
-        public async Task<UserDTO> GetUser(string name)
+        public async Task<UserDTO> GetUserById(string Id)
         {
-            //Given a user name,
+            //Given a user Id,
             //When I get the user from the database map the user to a UserDTO
             //Then, return the UserDTO
             // TODO: Get user from database
-
-            var randomNumber = new Random().Next();
-            var userId = "custom_user2";
-            User user = new User { Id = $"custom_user{randomNumber}", formId = $"custom_user{randomNumber}", Name = "John", Email = "john@example.com" };
-            var dto = await MapUserToDTO(user);
-            dto = await _cosmosRepository.GetUserAsync(userId);
-
+            var userId = Id;
+            var dto = await _cosmosRepository.GetUserAsync(userId);
             return dto;
         }
 
@@ -56,7 +52,7 @@ namespace Mapper.Services
 
         public async Task<UserDTO> UpdateUser(string Id, string name, string email)
         {
-            //Given a user name and email,
+            //Given a user Id, name and email,
             //When I update the user in the database
             //Then, return the UserDTO
             var user = new User() { Id = Id, Name = name, Email = email, formId = Id };
