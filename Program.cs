@@ -70,6 +70,14 @@ public class Program
             var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());
             var dto = service.CreateUser(user.Name, user.Email);
             return HttpStatusCode.Created;}).WithName("CreateUserDTO").WithOpenApi();
+        app.MapPut("/user", (HttpContext httpContext, [FromBody] UserUpdateRequest user) =>
+        {
+            var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());
+            var dto = service.UpdateUser(user.Id, user.Name, user.Email);
+            return HttpStatusCode.Created;
+        }).WithName("UpdateUserDTO").WithOpenApi();
         app.Run();
+
+
     }
 }

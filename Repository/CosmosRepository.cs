@@ -52,6 +52,7 @@ namespace Mapper.Repository
             public async Task<UserDTO> InsertItemAsync(UserDTO user)
             {
 
+                try{
                 // Insert the item into the container
                 var response = await _container.CreateItemAsync<UserDTO>(user, new PartitionKey(user.Id));
 
@@ -60,6 +61,11 @@ namespace Mapper.Repository
                     return user;
                 }
                 return null;
+                }
+                catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
+                {
+                    return null;
+                }
 
 
             }
@@ -77,13 +83,25 @@ namespace Mapper.Repository
                 }
             }
 
-
+        public async Task<UserDTO> UpdateUserAsync(UserDTO user)
+        { try
+            {
+                ItemResponse<UserDTO> response = await _container.UpsertItemAsync<UserDTO>(user, new PartitionKey(user.Id));
+                return response.Resource;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+            
         }
+    }
 
         public interface ICosmosRepository
         {
 
             Task<UserDTO> InsertItemAsync(UserDTO user);
             Task<UserDTO> GetUserAsync(string id);
+            Task<UserDTO> UpdateUserAsync(UserDTO user);
         }
     }

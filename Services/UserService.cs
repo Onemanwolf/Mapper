@@ -53,6 +53,18 @@ namespace Mapper.Services
             return dto;
         }
 
+
+        public async Task<UserDTO> UpdateUser(string Id, string name, string email)
+        {
+            //Given a user name and email,
+            //When I update the user in the database
+            //Then, return the UserDTO
+            var user = new User() { Id = Id, Name = name, Email = email, formId = Id };
+            var dto = await MapUserToDTO(user);
+            dto = await _cosmosRepository.UpdateUserAsync(dto);
+            return dto;
+        }
+
         private async Task<UserDTO> MapUserToDTO(User user)
         {
             return await Task.Run(() => { UserDTO dto = _mapper.Map<UserDTO>(user); return dto; });
