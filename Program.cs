@@ -1,5 +1,7 @@
 using System.Net;
+using AutoMapper;
 using Mapper.Models;
+using Mapper.Models.DTOs;
 using Mapper.Repository;
 using Mapper.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -9,6 +11,10 @@ namespace Mapper;
 
 public class Program
 {
+    public static MapperConfiguration _mapperConfiguration = new MapperConfiguration(cfg =>
+                        {
+                            cfg.CreateMap<User, UserDTO>();;
+                        });
 
     public async static Task Main(string[] args)
     {
@@ -24,6 +30,15 @@ public class Program
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckl
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
+        builder.Services.AddSingleton<IMapper>(sp =>
+                    {
+                         _mapperConfiguration = new MapperConfiguration(cfg =>
+                        {
+                            cfg.CreateMap<User, UserDTO>();
+                        });
+
+                        return _mapperConfiguration.CreateMapper();
+                    });
         builder.Services.AddSingleton<ICosmosRepository, CosmosRepository>();
         var configuration = builder.Configuration.AddJsonFile("appsettings.Development.json").AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING") ).Build();
         builder.Services.AddSingleton<IConfiguration>(configuration);
@@ -42,7 +57,7 @@ public class Program
 
         app.MapGet("/user", (HttpContext httpContext) =>
         {
-            var service = new UserService(new CosmosRepository(configuration));
+            var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());
             var dto = service.GetUser("John");
             return dto.Result;
         })
@@ -52,7 +67,7 @@ public class Program
 
         app.MapPost("/user", (HttpContext httpContext, [FromBody] UserRequest user) =>
         {
-            var service = new UserService(new CosmosRepository(configuration));
+            var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());
             var dto = service.CreateUser(user.Name, user.Email);
             return HttpStatusCode.Created;}).WithName("CreateUserDTO").WithOpenApi();
         app.Run();

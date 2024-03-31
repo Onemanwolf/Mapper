@@ -10,19 +10,21 @@ namespace Mapper.Services
     public class UserService
     {
         private readonly ICosmosRepository _cosmosRepository;
-        private readonly IMapper mapper;
+        private readonly IMapper _mapper;
 
 
-        public UserService(ICosmosRepository cosmosRepository)
+        public UserService(ICosmosRepository cosmosRepository, IMapper mapper)
         {
             _cosmosRepository = cosmosRepository;
-            this.mapper = mapper;
 
 
-            mapper = new MapperConfiguration(cfg =>
-           {
-               cfg.CreateMap<User, UserDTO>();
-           }).CreateMapper();
+
+            _mapper = mapper;
+
+        //     new MapperConfiguration(cfg =>
+        //    {
+        //        cfg.CreateMap<User, UserDTO>();
+        //    }).CreateMapper();
         }
         public async Task<UserDTO> GetUser(string name)
         {
@@ -53,7 +55,7 @@ namespace Mapper.Services
 
         private async Task<UserDTO> MapUserToDTO(User user)
         {
-            return await Task.Run(() => { UserDTO dto = mapper.Map<UserDTO>(user); return dto; });
+            return await Task.Run(() => { UserDTO dto = _mapper.Map<UserDTO>(user); return dto; });
         }
     }
 }
