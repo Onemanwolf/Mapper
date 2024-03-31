@@ -10,11 +10,11 @@ namespace Mapper.Services
 {
     public class UserService
     {
-        private readonly ICosmosRepository _cosmosRepository;
+        private readonly IRepository _cosmosRepository;
         private readonly IMapper _mapper;
 
 
-        public UserService(ICosmosRepository cosmosRepository, IMapper mapper)
+        public UserService(IRepository cosmosRepository, IMapper mapper)
         {
             _cosmosRepository = cosmosRepository;
 
@@ -59,6 +59,17 @@ namespace Mapper.Services
             var dto = await MapUserToDTO(user);
             dto = await _cosmosRepository.UpdateUserAsync(dto);
             return dto;
+        }
+
+
+        public async Task<List<UserDTO>> GetAllUsers()
+        {
+            //Given a user request a list of all users
+            //When I get the all users from the database
+            //Then, return the List of UserDTOs
+            var users = await _cosmosRepository.GetAllUsersAsync();
+
+            return users;
         }
 
         private async Task<UserDTO> MapUserToDTO(User user)

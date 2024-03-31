@@ -11,11 +11,12 @@ namespace Mapper;
 
 public class Program
 {
-    public static MapperConfiguration _mapperConfiguration = new MapperConfiguration(cfg =>
+    private static MapperConfiguration _mapperConfiguration = new MapperConfiguration(cfg =>
                         {
                             cfg.CreateMap<User, UserDTO>(); ;
                         });
-
+    private static UserService _userService;
+    private static IRepository _cosmosRepository;
     public async static Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
@@ -39,9 +40,14 @@ public class Program
 
                         return _mapperConfiguration.CreateMapper();
                     });
-        builder.Services.AddSingleton<ICosmosRepository, CosmosRepository>();
-        var configuration = builder.Configuration.AddJsonFile("appsettings.Development.json").AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING")).Build();
+        builder.Services.AddSingleton<IRepository, CosmosRepository>();
+        var configuration = builder.Configuration.AddJsonFile("appsettings.Development.json")
+        .AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING"))
+        .Build();
         builder.Services.AddSingleton<IConfiguration>(configuration);
+        _cosmosRepository = new CosmosRepository(configuration);
+        _userService = new UserService(_cosmosRepository,
+                                       _mapperConfiguration.CreateMapper());
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
@@ -55,10 +61,11 @@ public class Program
 
         app.UseAuthorization();
 
-        app.MapGet("/user", (HttpContext httpContext) =>
+        //Endpoints
+
+        app.MapGet("/user", (HttpContext httpContext, [FromQuery] string id) =>
         {
-            var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());
-            var dto = service.GetUserById("John");
+            var dto = _userService.GetUserById(id);
             return dto.Result;
         })
             .WithName("GetUserDTO")
@@ -67,18 +74,41 @@ public class Program
 
         app.MapPost("/user", (HttpContext httpContext, [FromBody] UserRequest user) =>
         {
-            var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());
-            var dto = service.CreateUser(user.Name, user.Email);
+            //fail fast validation
+            //fail fast avoid allowing the request to go through the entire call cain
+            if (user.NotValid())
+            {
+                return HttpStatusCode.BadRequest;
+            }
+            // if (String.IsNullOrEmpty(user.Name) || String.IsNullOrEmpty(user.Email))
+            // {
+            //     return HttpStatusCode.BadRequest;
+            // }
+
+            var dto = _userService.CreateUser(user.Name, user.Email);
             return HttpStatusCode.Created;
         }).WithName("CreateUserDTO").WithOpenApi();
+
+
         app.MapPut("/user", (HttpContext httpContext, [FromBody] UserUpdateRequest user) =>
         {
-            var service = new UserService(new CosmosRepository(configuration), _mapperConfiguration.CreateMapper());
-            var dto = service.UpdateUser(user.Id, user.Name, user.Email);
+            if (String.IsNullOrEmpty(user.Id) || String.IsNullOrEmpty(user.Name) || String.IsNullOrEmpty(user.Email))
+            {
+                return HttpStatusCode.BadRequest;
+            }
+            var dto = _userService.UpdateUser(user.Id, user.Name, user.Email);
             return HttpStatusCode.Created;
         }).WithName("UpdateUserDTO").WithOpenApi();
-        app.Run();
 
+
+
+        app.MapGet("/users", (HttpContext httpContext) =>
+        {
+            var dto = _userService.GetAllUsers();
+            return dto.Result;
+        }).WithName("GetAllUsersDTO").WithOpenApi();
+
+        app.Run();
 
     }
 }

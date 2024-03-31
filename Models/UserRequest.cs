@@ -11,5 +11,17 @@ namespace Mapper.Models
 
 
         public string? Email { get; set; }
+
+
+        public bool IsValid()
+        {
+            return !string.IsNullOrEmpty(Name) && !string.IsNullOrEmpty(Email);
+        }
+
+        public bool NotValid()
+        {
+            return string.IsNullOrEmpty(Name) || string.IsNullOrEmpty(Email);
+        }
+
     }
 }

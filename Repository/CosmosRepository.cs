@@ -10,7 +10,7 @@ using Mapper.Models.DTOs;
 namespace Mapper.Repository
 {
 
-    public class CosmosRepository : ICosmosRepository
+    public class CosmosRepository : IRepository
     {
 
 
@@ -47,12 +47,14 @@ namespace Mapper.Repository
             _container = _containerResponse.Container;
 
 
-}
+        }
 
-            public async Task<UserDTO> InsertItemAsync(UserDTO user)
+        public async Task<UserDTO> InsertItemAsync(UserDTO user)
+        {
+
+            //Try Catch block when leaving or entering the boundary of the application
+            try
             {
-
-                try{
                 // Insert the item into the container
                 var response = await _container.CreateItemAsync<UserDTO>(user, new PartitionKey(user.Id));
 
@@ -61,30 +63,31 @@ namespace Mapper.Repository
                     return user;
                 }
                 return null;
-                }
-                catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
-                {
-                    return null;
-                }
-
-
             }
-
-            public async Task<UserDTO> GetUserAsync(string id)
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.Conflict)
             {
-                try
-                {
-                    ItemResponse<UserDTO> response = await _container.ReadItemAsync<UserDTO>(id, new PartitionKey(id));
-                    return response.Resource;
-                }
-                catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-                {
-                    return null;
-                }
+                return null;
             }
+
+
+        }
+
+        public async Task<UserDTO> GetUserAsync(string id)
+        {
+            try
+            {
+                ItemResponse<UserDTO> response = await _container.ReadItemAsync<UserDTO>(id, new PartitionKey(id));
+                return response.Resource;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
 
         public async Task<UserDTO> UpdateUserAsync(UserDTO user)
-        { try
+        {
+            try
             {
                 ItemResponse<UserDTO> response = await _container.UpsertItemAsync<UserDTO>(user, new PartitionKey(user.Id));
                 return response.Resource;
@@ -93,15 +96,43 @@ namespace Mapper.Repository
             {
                 return null;
             }
-            
-        }
-    }
 
-        public interface ICosmosRepository
+        }
+
+        public async Task<List<UserDTO>> GetAllUsersAsync()
         {
+            try
+            {
+                var sqlQueryText = "SELECT * FROM c";
+                QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+                FeedIterator<UserDTO> queryResultSetIterator = _container.GetItemQueryIterator<UserDTO>(queryDefinition);
 
-            Task<UserDTO> InsertItemAsync(UserDTO user);
-            Task<UserDTO> GetUserAsync(string id);
-            Task<UserDTO> UpdateUserAsync(UserDTO user);
+                List<UserDTO> users = new List<UserDTO>();
+
+                while (queryResultSetIterator.HasMoreResults)
+                {
+                    FeedResponse<UserDTO> currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                    foreach (UserDTO user in currentResultSet)
+                    {
+                        users.Add(user);
+                    }
+                }
+
+                return users;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
         }
     }
+
+    public interface IRepository
+    {
+
+        Task<UserDTO> InsertItemAsync(UserDTO user);
+        Task<UserDTO> GetUserAsync(string id);
+        Task<UserDTO> UpdateUserAsync(UserDTO user);
+        Task<List<UserDTO>> GetAllUsersAsync();
+    }
+}

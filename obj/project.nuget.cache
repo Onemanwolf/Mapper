@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "JU3MaUqAgyPrLMbXqnwNlbGRTbFjjy8BfHGs32F3baD19yBVNdxsgo77s/Kh8VmZTtFFVH1btp8MdmhW8zhygQ==",
+  "dgSpecHash": "IO/aLzfTzgfyIdxKwQ2HoHfTrEPKmfHTEA9oNCIyj/S2iwykTw+lq8mEKaF2ZHrB5MSk2wog2xh3AzWfdfOIGQ==",
   "success": true,
-  "projectFilePath": "C:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
+  "projectFilePath": "c:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\timot\\.nuget\\packages\\automapper\\13.0.1\\automapper.13.0.1.nupkg.sha512",
     "C:\\Users\\timot\\.nuget\\packages\\azure.core\\1.36.0\\azure.core.1.36.0.nupkg.sha512",
