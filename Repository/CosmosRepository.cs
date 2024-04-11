@@ -12,35 +12,36 @@ namespace Mapper.Repository
 
     public class CosmosRepository : IRepository
     {
-
-
-
         public string endpoint = "https://cosmosdb00.documents.azure.com:443/";
-        public string connectionString;
+        public string _connectionString;
         public string databaseName = "customformdb";
         public string containerName = "customform";
         string partitionKeyPath = "/formId";
-        private CosmosClient cosmosClient;
+        private CosmosClient _cosmosClient;
+        private ICosmosDBClientFactory _cosmosDBClientFactory;
         private ContainerResponse _containerResponse;
         private Container _container;
         private IConfiguration configuration;
-        public CosmosRepository(IConfiguration configuration)
+        public CosmosRepository(IConfiguration configuration, ICosmosDBClientFactory cosmosDBClientFactory)
         {
             this.configuration = configuration;
-            connectionString = configuration["CONNECTION_STRING_COSMOS"];
+            _connectionString = configuration["CONNECTION_STRING_COSMOS"];
+            _cosmosDBClientFactory = cosmosDBClientFactory;
+
             //Run this command to set the environment variable
             //setx CONNECTION_STRING_COSMOS "" /M
-            InitializeCosmosClientAsync(connectionString).Wait();
+            InitializeCosmosClientAsync().Wait();
 
         }
 
 
-        public async Task InitializeCosmosClientAsync(string connectionString)
+        public async Task InitializeCosmosClientAsync()
         {
-            var _connectionString = connectionString;
 
-            cosmosClient = new CosmosClient(_connectionString);
-            DatabaseResponse database = await cosmosClient.CreateDatabaseIfNotExistsAsync(databaseName);
+
+            _cosmosClient = await _cosmosDBClientFactory.CreateCosmosClient(_connectionString);
+
+            DatabaseResponse database = await _cosmosClient.CreateDatabaseIfNotExistsAsync(databaseName);
 
             _containerResponse = await database.Database.CreateContainerIfNotExistsAsync(containerName, partitionKeyPath, 1000);
             //ContainerResponse container = await database.Database.CreateContainerIfNotExistsAsync(containerName, "/formId", 1000);
@@ -104,6 +105,33 @@ namespace Mapper.Repository
             try
             {
                 var sqlQueryText = "SELECT * FROM c";
+                QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
+                FeedIterator<UserDTO> queryResultSetIterator = _container.GetItemQueryIterator<UserDTO>(queryDefinition);
+
+                List<UserDTO> users = new List<UserDTO>();
+
+                while (queryResultSetIterator.HasMoreResults)
+                {
+                    FeedResponse<UserDTO> currentResultSet = await queryResultSetIterator.ReadNextAsync();
+                    foreach (UserDTO user in currentResultSet)
+                    {
+                        users.Add(user);
+                    }
+                }
+
+                return users;
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+        }
+        // generate a method to get all users and order by name
+        public async Task<List<UserDTO>> GetAllUsersOrderByNameAsync()
+        {
+            try
+            {
+                var sqlQueryText = "SELECT * FROM c ORDER BY c.Name";
                 QueryDefinition queryDefinition = new QueryDefinition(sqlQueryText);
                 FeedIterator<UserDTO> queryResultSetIterator = _container.GetItemQueryIterator<UserDTO>(queryDefinition);
 

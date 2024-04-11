@@ -40,12 +40,17 @@ public class Program
 
                         return _mapperConfiguration.CreateMapper();
                     });
+       var CosmosClient = builder.Services.AddSingleton<ICosmosDBClientFactory, CosmosDBClientFactory>();
+
+
         builder.Services.AddSingleton<IRepository, CosmosRepository>();
         var configuration = builder.Configuration.AddJsonFile("appsettings.Development.json")
         .AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING"))
         .Build();
         builder.Services.AddSingleton<IConfiguration>(configuration);
-        _cosmosRepository = new CosmosRepository(configuration);
+        var cosmosDBClientFactory = new CosmosDBClientFactory();
+        _cosmosRepository = new CosmosRepository(configuration, cosmosDBClientFactory);
+
         _userService = new UserService(_cosmosRepository,
                                        _mapperConfiguration.CreateMapper());
         var app = builder.Build();
