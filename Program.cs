@@ -5,48 +5,54 @@ using Mapper.Models.DTOs;
 using Mapper.Repository;
 using Mapper.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.SwaggerGen;
+using Microsoft.Extensions.DependencyInjection;
+
+
 
 
 namespace Mapper;
 
 public class Program
 {
+
     private static MapperConfiguration _mapperConfiguration = new MapperConfiguration(cfg =>
                         {
                             cfg.CreateMap<User, UserDTO>(); ;
                         });
     private static UserService _userService;
     private static IRepository _cosmosRepository;
+    private static ILogger<Program> _logger;
+
     public async static Task Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
 
         // Add services to the container.
-        builder.Services.AddAuthorization();
+       // Add this line
 
-        // Add AutoMapper
-        builder.Services.AddAutoMapper(typeof(Program).Assembly);
-        // Add other services
+        // ...
 
-        // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckl
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-        builder.Services.AddSingleton<IMapper>(sp =>
-                    {
-                        _mapperConfiguration = new MapperConfiguration(cfg =>
-                       {
-                           cfg.CreateMap<User, UserDTO>();
-                       });
-
-                        return _mapperConfiguration.CreateMapper();
-                    });
-       var CosmosClient = builder.Services.AddSingleton<ICosmosDBClientFactory, CosmosDBClientFactory>();
 
 
-        builder.Services.AddSingleton<IRepository, CosmosRepository>();
+
+        // ...
+
+        builder.Services.AddApplicationInsightsTelemetry(options =>
+        {
+            options.ConnectionString = "InstrumentationKey=ae4da2fa-70de-466f-a152-0524d48bcba9;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/;ApplicationId=475cb098-c206-4648-9716-bdcc8271f85b";
+        });
+
+        builder.Services.AddLogging(builder => builder.AddApplicationInsights());
+
+        // ...
         var configuration = builder.Configuration.AddJsonFile("appsettings.Development.json")
-        .AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING"))
-        .Build();
+            .AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING"))
+            .Build();
+
         builder.Services.AddSingleton<IConfiguration>(configuration);
         var cosmosDBClientFactory = new CosmosDBClientFactory();
         _cosmosRepository = new CosmosRepository(configuration, cosmosDBClientFactory);
@@ -56,26 +62,23 @@ public class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
-        if (app.Environment.IsDevelopment())
-        {
+
             app.UseSwagger();
-            app.UseSwaggerUI();
-        }
+          app.UseSwaggerUI();
 
         app.UseHttpsRedirection();
 
-        app.UseAuthorization();
+
 
         //Endpoints
 
-        app.MapGet("/user", (HttpContext httpContext, [FromQuery] string id) =>
+        app.MapGet("/user", (HttpContext httpContext,  [FromQuery] string id) =>
         {
             var dto = _userService.GetUserById(id);
             return dto.Result;
         })
             .WithName("GetUserDTO")
             .WithOpenApi();
-
 
         app.MapPost("/user", (HttpContext httpContext, [FromBody] UserRequest user) =>
         {
@@ -107,9 +110,14 @@ public class Program
 
 
 
-        app.MapGet("/users", (HttpContext httpContext) =>
+        app.MapGet("/users",  (HttpContext httpContext, ILogger<Program> Logger) =>
         {
+           _logger = Logger;
+
             var dto = _userService.GetAllUsers();
+            _logger.LogError("Get all users error");
+            _logger.LogInformation("Get all users information");
+
             return dto.Result;
         }).WithName("GetAllUsersDTO").WithOpenApi();
 

@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj": {}
+    "c:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj": {}
   },
   "projects": {
-    "C:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj": {
+    "c:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
+        "projectUniqueName": "c:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
         "projectName": "Mapper",
-        "projectPath": "C:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
+        "projectPath": "c:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
         "packagesPath": "C:\\Users\\timot\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\timot\\source\\repos\\Mapper\\obj\\",
+        "outputPath": "c:\\Users\\timot\\source\\repos\\Mapper\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
@@ -58,6 +58,10 @@
               "target": "Package",
               "version": "[1.10.4, )"
             },
+            "Microsoft.ApplicationInsights.AspNetCore": {
+              "target": "Package",
+              "version": "[2.22.0, )"
+            },
             "Microsoft.AspNetCore.OpenApi": {
               "target": "Package",
               "version": "[8.0.3, )"
@@ -66,9 +70,13 @@
               "target": "Package",
               "version": "[3.38.1, )"
             },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "Swashbuckle.AspNetCore": {
               "target": "Package",
-              "version": "[6.4.0, )"
+              "version": "[6.5.0, )"
             }
           },
           "imports": [

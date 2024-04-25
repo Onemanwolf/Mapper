@@ -12,8 +12,9 @@ namespace Mapper.Services
     {
         private readonly IRepository _cosmosRepository;
         private readonly IMapper _mapper;
+       
 
-        
+
         public UserService(IRepository cosmosRepository, IMapper mapper)
         {
             _cosmosRepository = cosmosRepository;
@@ -71,7 +72,7 @@ namespace Mapper.Services
 
             return users;
         }
-        
+
 
         private async Task<UserDTO> MapUserToDTO(User user)
         {
