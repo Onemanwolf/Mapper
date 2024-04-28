@@ -8370,11 +8370,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
+      "projectUniqueName": "C:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
       "projectName": "Mapper",
-      "projectPath": "c:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
+      "projectPath": "C:\\Users\\timot\\source\\repos\\Mapper\\Mapper.csproj",
       "packagesPath": "C:\\Users\\timot\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\timot\\source\\repos\\Mapper\\obj\\",
+      "outputPath": "C:\\Users\\timot\\source\\repos\\Mapper\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
