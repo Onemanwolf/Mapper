@@ -22,11 +22,13 @@ namespace Mapper.Repository
         private ContainerResponse _containerResponse;
         private Container _container;
         private IConfiguration configuration;
-        public CosmosRepository(IConfiguration configuration, ICosmosDBClientFactory cosmosDBClientFactory)
+        private readonly ILogger<CosmosRepository> _logger;
+        public CosmosRepository(IConfiguration configuration, ICosmosDBClientFactory cosmosDBClientFactory, ILogger<CosmosRepository> logger)
         {
             this.configuration = configuration;
             _connectionString = configuration["CONNECTION_STRING_COSMOS"];
             _cosmosDBClientFactory = cosmosDBClientFactory;
+            _logger = logger;
 
             //Run this command to set the environment variable
             //setx CONNECTION_STRING_COSMOS "" /M
@@ -59,6 +61,8 @@ namespace Mapper.Repository
                 // Insert the item into the container
                 var response = await _container.CreateItemAsync<UserDTO>(user, new PartitionKey(user.Id));
 
+                _logger.LogInformation($"Inserted item in database with id: {user.Id}");
+
                 if (response.StatusCode == System.Net.HttpStatusCode.Created)
                 {
                     return user;
@@ -78,6 +82,7 @@ namespace Mapper.Repository
             try
             {
                 ItemResponse<UserDTO> response = await _container.ReadItemAsync<UserDTO>(id, new PartitionKey(id));
+                _logger.LogInformation($"Get item in database with id: {id}");
                 return response.Resource;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -91,6 +96,7 @@ namespace Mapper.Repository
             try
             {
                 ItemResponse<UserDTO> response = await _container.UpsertItemAsync<UserDTO>(user, new PartitionKey(user.Id));
+                _logger.LogInformation($"Updated item in database with id: {user.Id}");
                 return response.Resource;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -118,7 +124,7 @@ namespace Mapper.Repository
                         users.Add(user);
                     }
                 }
-
+                _logger.LogInformation($"Get all users in database");
                 return users;
             }
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
