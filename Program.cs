@@ -41,10 +41,7 @@ public class Program
 
         // ...
 
-        builder.Services.AddApplicationInsightsTelemetry(options =>
-        {
-            options.ConnectionString = "InstrumentationKey=ae4da2fa-70de-466f-a152-0524d48bcba9;IngestionEndpoint=https://eastus-8.in.applicationinsights.azure.com/;LiveEndpoint=https://eastus.livediagnostics.monitor.azure.com/;ApplicationId=475cb098-c206-4648-9716-bdcc8271f85b";
-        });
+
 
        builder.Services.AddLogging(builder => builder.AddApplicationInsights());
 
@@ -53,7 +50,12 @@ public class Program
             .AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING"))
             .Build();
 
-        var logger = LoggerFactory.Create(builder => builder.AddApplicationInsights("ae4da2fa-70de-466f-a152-0524d48bcba9")).CreateLogger<CosmosRepository>();
+             builder.Services.AddApplicationInsightsTelemetry(options =>
+        {
+            options.ConnectionString = configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING");
+        });
+
+        var logger = LoggerFactory.Create(builder => builder.AddApplicationInsights(configuration["InstrumentationKey"])).CreateLogger<CosmosRepository>();
         builder.Services.AddSingleton<IConfiguration>(configuration);
         var cosmosDBClientFactory = new CosmosDBClientFactory();
         _cosmosRepository = new CosmosRepository(configuration, cosmosDBClientFactory, logger);
