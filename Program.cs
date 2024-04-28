@@ -53,9 +53,10 @@ public class Program
             .AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING"))
             .Build();
 
+        var logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<CosmosRepository>();
         builder.Services.AddSingleton<IConfiguration>(configuration);
         var cosmosDBClientFactory = new CosmosDBClientFactory();
-        _cosmosRepository = new CosmosRepository(configuration, cosmosDBClientFactory);
+        _cosmosRepository = new CosmosRepository(configuration, cosmosDBClientFactory, logger);
 
         _userService = new UserService(_cosmosRepository,
                                        _mapperConfiguration.CreateMapper());
