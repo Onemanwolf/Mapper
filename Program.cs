@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.ApplicationInsights.Extensibility;
 
 
 
@@ -41,10 +40,9 @@ public class Program
         {
             options.ConnectionString = configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING");
         });
+        var instrumentationKey = configuration["InstrumentationKey"];
 
-        TelemetryConfiguration  telemetryConfiguration = TelemetryConfiguration.CreateDefault();
-        telemetryConfiguration.ConnectionString = configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING");
-        var logger = LoggerFactory.Create(builder => builder.AddApplicationInsights(telemetryConfiguration => {telemetryConfiguration.ConnectionString})).CreateLogger<CosmosRepository>();
+        var logger = LoggerFactory.Create(builder => builder.AddApplicationInsights(instrumentationKey)).CreateLogger<CosmosRepository>();
         builder.Services.AddSingleton<IConfiguration>(configuration);
         var cosmosDBClientFactory = new CosmosDBClientFactory();
 
