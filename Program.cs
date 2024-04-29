@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.ApplicationInsights.Extensibility;
 
 
 
@@ -29,23 +30,9 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
-       // Add this line
-
-        // ...
-
         builder.Services.AddEndpointsApiExplorer();
         builder.Services.AddSwaggerGen();
-
-
-
-        // ...
-
-
-
-       builder.Services.AddLogging(builder => builder.AddApplicationInsights());
-
-        // ...
+        builder.Services.AddLogging(builder => builder.AddApplicationInsights());
         var configuration = builder.Configuration.AddJsonFile("appsettings.Development.json")
             .AddEnvironmentVariables(Environment.GetEnvironmentVariable("COSMOS_CONNECTION_STRING"))
             .Build();
@@ -55,9 +42,12 @@ public class Program
             options.ConnectionString = configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING");
         });
 
-        var logger = LoggerFactory.Create(builder => builder.AddApplicationInsights(configuration["InstrumentationKey"])).CreateLogger<CosmosRepository>();
+        TelemetryConfiguration  telemetryConfiguration = TelemetryConfiguration.CreateDefault();
+        telemetryConfiguration.ConnectionString = configuration.GetConnectionString("APPLICATIONINSIGHTS_CONNECTION_STRING");
+        var logger = LoggerFactory.Create(builder => builder.AddApplicationInsights(telemetryConfiguration => {telemetryConfiguration.ConnectionString})).CreateLogger<CosmosRepository>();
         builder.Services.AddSingleton<IConfiguration>(configuration);
         var cosmosDBClientFactory = new CosmosDBClientFactory();
+
         _cosmosRepository = new CosmosRepository(configuration, cosmosDBClientFactory, logger);
 
         _userService = new UserService(_cosmosRepository,
@@ -66,16 +56,16 @@ public class Program
 
         // Configure the HTTP request pipeline.
 
-            app.UseSwagger();
+          app.UseSwagger();
           app.UseSwaggerUI();
 
-        app.UseHttpsRedirection();
+          app.UseHttpsRedirection();
 
 
 
         //Endpoints
 
-        app.MapGet("/user", (HttpContext httpContext,  [FromQuery] string id) =>
+        app.MapGet("/user/{id}", (HttpContext httpContext,  [FromQuery] string id) =>
         {
             var dto = _userService.GetUserById(id);
             return dto.Result;
@@ -91,10 +81,6 @@ public class Program
             {
                 return HttpStatusCode.BadRequest;
             }
-            // if (String.IsNullOrEmpty(user.Name) || String.IsNullOrEmpty(user.Email))
-            // {
-            //     return HttpStatusCode.BadRequest;
-            // }
 
             var dto = _userService.CreateUser(user.Name, user.Email);
             return HttpStatusCode.Created;
@@ -113,7 +99,7 @@ public class Program
 
 
 
-        app.MapGet("/users",  (HttpContext httpContext, ILogger<Program> Logger) =>
+        app.MapGet("/user",  (HttpContext httpContext, ILogger<Program> Logger) =>
         {
            _logger = Logger;
 
